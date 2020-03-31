@@ -21,7 +21,7 @@ const animalType = new GraphQLObjectType({
         species: {
             type: speciesType,
             resolve(parent, args) {
-                return species.findById(parent.species);
+                return species.find(spe => spe.id === parent.species);
             },
         },
     }),
@@ -31,19 +31,19 @@ const speciesType = new GraphQLObjectType({
     name: 'species',
     description: 'Animal species',
     fields: () => ({
+        id: {type: GraphQLID},
         speciesName: {type: GraphQLString},
         category: {
-            id: {type: GraphQLID},
             type: categoryType,
             resolve(parent, args) {
-                return category.findById(parent.category);
+                return category.find(cat => cat.id === parent.category);
             },
         },
     }),
 });
 
 const categoryType = new GraphQLObjectType({
-    name: 'gategory',
+    name: 'category',
     description: 'Animal gategory',
     fields: () => ({
         id: {type: GraphQLID},
@@ -62,6 +62,16 @@ const RootQuery = new GraphQLObjectType({
                 return animal.find();
             }
         },
+        animal: {
+            type: animalType,
+            description: 'Get animal by id',
+            args: {
+                id: {type: new GraphQLNonNull(GraphQLID)},
+            },
+            resolve: (parent, args) => {
+                return animalData.find(animal => animal.id === args.id);
+            },
+        },
     },
 });
 
@@ -76,9 +86,7 @@ const Mutation = new GraphQLObjectType({
                 categoryName: {type: new GraphQLNonNull(GraphQLString)},
             },
             resolve(parent, args) {
-                const newCategory = new category({
-                    categoryName: args.categoryName,
-                });
+                const newCategory = new category(args);
                 return newCategory.save();
             },
         },
@@ -90,25 +98,19 @@ const Mutation = new GraphQLObjectType({
                 category: {type: new GraphQLNonNull(GraphQLID)},
             },
             resolve(parent, args) {
-                const newSpecies = new species({
-                    speciesName: args.speciesName,
-                    category: args.category,
-                });
+                const newSpecies = new species(args);
                 return newSpecies.save();
             },
         },
         addAnimal: {
             type: animalType,
-            description: 'Add animal',
+            description: 'Add animal name like Frank, John',
             args: {
                 animalName: {type: new GraphQLNonNull(GraphQLString)},
-                species: {type: GraphQLID},
+                species: {type: new GraphQLNonNull(GraphQLID)},
             },
             resolve(parent, args) {
-                const newAnimal = new animal({
-                    animalName: args.animalName,
-                    species: args.species,
-                });
+                const newAnimal = new animal(args);
                 return newAnimal.save();
             },
         },
