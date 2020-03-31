@@ -7,9 +7,10 @@ const port = 3000;
 const app = express();
 const db = require('./db/db');
 
-app.use('/graphql', graphqlHTTP({
-        schema: MyGraphQLSchema, graphiql: true,
-    }),
+app.use('/graphql', graphqlHTTP(async () => ({
+        schema: MyGraphQLSchema,
+        graphiql: true,
+    })),
 );
 
 db.on('connected', () => {
